@@ -1,0 +1,203 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local guiName = "AbuZaraMenu_Fixed"
+
+if CoreGui:FindFirstChild(guiName) then CoreGui[guiName]:Destroy() end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = guiName
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+ScreenGui.Parent = CoreGui
+
+-- دالة
+local function createAnimatedOutline(parent, size, position, cornerRadius)
+    local outline = Instance.new("Frame")
+    outline.Size = size
+    outline.Position = position
+    outline.BackgroundColor3 = Color3.new(1, 1, 1)
+    outline.BorderSizePixel = 0
+    outline.Parent = parent
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = cornerRadius
+    corner.Parent = outline
+
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),   --
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 0, 0)), --
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))    --
+    })
+    gradient.Rotation = 90
+    gradient.Parent = outline
+    
+    return outline, gradient
+end
+
+local activeGradients = {}
+
+-- 1. الحافة زر)()
+local outlineFrame, outlineGrad = createAnimatedOutline(ScreenGui, UDim2.new(0, 226, 0, 270), UDim2.new(0.4, 0, 0.3, 0), UDim.new(0, 12))
+outlineFrame.Name = "Outline"
+outlineFrame.Active = true
+table.insert(activeGradients, outlineGrad)
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "AbuZaraMenu"
+MainFrame.Parent = outlineFrame
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.Position = UDim2.new(0, 3, 0, 3)
+MainFrame.Size = UDim2.new(1, -6, 1, -6)
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 10)
+mainCorner.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Parent = MainFrame
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+Title.Text = "ابو زارا"
+Title.TextColor3 = Color3.fromRGB(255, 0, 0)
+Title.TextSize = 16
+Title.Font = Enum.Font.SourceSansBold
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 10)
+titleCorner.Parent = Title
+
+-- خانة
+local function createStyledElement(parent, size, position, defaultText, bgColor, isButton)
+    local outFrame, grad = createAnimatedOutline(parent, size, position, UDim.new(0, 6))
+    table.insert(activeGradients, grad)
+    
+    local elem = Instance.new(isButton and "TextButton" or "TextBox")
+    elem.Parent = outFrame
+    elem.Position = UDim2.new(0, 2, 0, 2)
+    elem.Size = UDim2.new(1, -4, 1, -4)
+    elem.BackgroundColor3 = bgColor
+    elem.Text = defaultText
+    elem.TextColor3 = Color3.fromRGB(255, 255, 255)
+    elem.TextSize = isButton and 16 or 14
+    elem.Font = isButton and Enum.Font.SourceSansBold or Enum.Font.SourceSans
+    elem.BorderSizePixel = 0
+    if not isButton then
+        elem.PlaceholderText = defaultText
+        if defaultText ~= "-" then
+            elem.Text = (defaultText == "nv" or defaultText == "me") and defaultText or ""
+        end
+    end
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 5)
+    corner.Parent = elem
+    
+    return elem
+end
+
+-- 2.الإشارة (Prefix) خانة الأمر
+local PrefixInput = createStyledElement(MainFrame, UDim2.new(0.9, 0, 0, 30), UDim2.new(0.05, 0, 0.13, 0), "-", Color3.fromRGB(30, 30, 30), false)
+local CommandInput = createStyledElement(MainFrame, UDim2.new(0.9, 0, 0, 35), UDim2.new(0.05, 0, 0.26, 0), "nv", Color3.fromRGB(40, 40, 40), false)
+local UserInput = createStyledElement(MainFrame, UDim2.new(0.9, 0, 0, 35), UDim2.new(0.05, 0, 0.42, 0), "me", Color3.fromRGB(40, 40, 40), false)
+local StartButton = createStyledElement(MainFrame, UDim2.new(0.9, 0, 0, 35), UDim2.new(0.05, 0, 0.62, 0), "بدأ", Color3.fromRGB(139, 0, 0), true)
+local StopButton = createStyledElement(MainFrame, UDim2.new(0.9, 0, 0, 35), UDim2.new(0.05, 0, 0.80, 0), "ايقاف", Color3.fromRGB(50, 50, 50), true)
+
+-- 3. زر (فتح وإغلاق)
+local toggleOut, toggleGrad = createAnimatedOutline(ScreenGui, UDim2.new(0, 46, 0, 46), UDim2.new(0.1, 0, 0.3, 0), UDim.new(1, 0))
+toggleOut.Active = true
+table.insert(activeGradients, toggleGrad)
+
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Parent = toggleOut
+ToggleBtn.Position = UDim2.new(0, 2, 0, 2)
+ToggleBtn.Size = UDim2.new(1, -4, 1, -4)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+ToggleBtn.Text = "🌐"
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.TextSize = 18
+ToggleBtn.BorderSizePixel = 0
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(1, 0)
+toggleCorner.Parent = ToggleBtn
+
+-- اخفاء/إظهار
+local isOpen = true
+ToggleBtn.MouseButton1Click:Connect(function()
+    isOpen = not isOpen
+    outlineFrame.Visible = isOpen
+end)
+
+-- الحواف
+RunService.RenderStepped:Connect(function(dt)
+    for _, grad in ipairs(activeGradients) do
+        grad.Rotation = (grad.Rotation + dt * 120) % 360
+    end
+end)
+
+-- السحب
+local function makeDraggable(frame)
+    local dragging, dragStart, startPos
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+        end
+    end)
+
+    UIS.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+
+    UIS.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+end
+
+makeDraggable(outlineFrame)
+makeDraggable(toggleOut)
+
+--  خانة الإشارة (Prefix)
+local remoteSignal = game:GetService("ReplicatedStorage"):WaitForChild("HDAdminHDClient"):WaitForChild("Signals"):WaitForChild("RequestCommand")
+local spamConnection = nil
+
+StartButton.MouseButton1Click:Connect(function()
+	if spamConnection then return end
+	StartButton.Text = "جاري الارسال..."
+	
+	spamConnection = RunService.Heartbeat:Connect(function()
+        local prefix = PrefixInput.Text
+		local cmd = CommandInput.Text
+		local target = UserInput.Text
+		local fullCommand = prefix .. cmd .. " " .. target
+		local args = { fullCommand }
+		
+		for i = 1, 10 do 
+			pcall(function()
+				remoteSignal:InvokeServer(unpack(args))
+			end)
+		end
+	end)
+end)
+
+StopButton.MouseButton1Click:Connect(function()
+	if spamConnection then
+		spamConnection:Disconnect()
+		spamConnection = nil
+	end
+	StartButton.Text = "بدأ"
+end)
