@@ -1,0 +1,161 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+
+-- الريموت
+local Event = ReplicatedStorage:WaitForChild("FakeChatEvent", 5)
+if not Event then
+    warn(" FakeChatEvent ReplicatedStorage!")
+    return
+end
+
+-- إنشاء واجهة المستخدم (GUI)
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ChatCustomizerGui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- الإطار الرئيسي
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 320, 0, 360)
+mainFrame.Position = UDim2.new(0.5, -160, 0.5, -180)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = mainFrame
+
+-- عنوان الواجهة
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 40)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "لوحة تخصيص الشات )()"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.TextSize = 14
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.Parent = mainFrame
+
+-- كتابة النص
+local textBox = Instance.new("TextBox")
+textBox.Size = UDim2.new(0.9, 0, 0, 40)
+textBox.Position = UDim2.new(0.05, 0, 0, 45)
+textBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+textBox.PlaceholderText = "اكتب الكلمة هنا..."
+textBox.Text = "" --
+textBox.TextSize = 15
+textBox.Font = Enum.Font.SourceSans
+textBox.ClearTextOnFocus = false
+textBox.Parent = mainFrame
+
+local boxCorner = Instance.new("UICorner")
+boxCorner.CornerRadius = UDim.new(0, 6)
+boxCorner.Parent = textBox
+
+-- خانة حجم الخط
+local sizeBox = Instance.new("TextBox")
+sizeBox.Size = UDim2.new(0.42, 0, 0, 35)
+sizeBox.Position = UDim2.new(0.05, 0, 0, 95)
+sizeBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+sizeBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+sizeBox.Text = "40"
+sizeBox.TextSize = 14
+sizeBox.Font = Enum.Font.SourceSans
+sizeBox.Parent = mainFrame
+
+local sizeCorner = Instance.new("UICorner")
+sizeCorner.CornerRadius = UDim.new(0, 6)
+sizeCorner.Parent = sizeBox
+
+-- كود اللون
+local colorBox = Instance.new("TextBox")
+colorBox.Size = UDim2.new(0.42, 0, 0, 35)
+colorBox.Position = UDim2.new(0.53, 0, 0, 95)
+colorBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+colorBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+colorBox.Text = "#FF0000"
+colorBox.TextSize = 14
+colorBox.Font = Enum.Font.SourceSans
+colorBox.Parent = mainFrame
+
+local colorCorner = Instance.new("UICorner")
+colorCorner.CornerRadius = UDim.new(0, 6)
+colorCorner.Parent = colorBox
+
+-- مربع أبو عابد حق الألوان
+local colorsFrame = Instance.new("Frame")
+colorsFrame.Size = UDim2.new(0.9, 0, 0, 100)
+colorsFrame.Position = UDim2.new(0.05, 0, 0, 140)
+colorsFrame.BackgroundTransparency = 1
+colorsFrame.Parent = mainFrame
+
+local gridLayout = Instance.new("UIGridLayout")
+gridLayout.CellSize = UDim2.new(0, 56, 0, 30)
+gridLayout.CellPadding = UDim2.new(0, 8, 0, 8)
+gridLayout.Parent = colorsFrame
+
+local colorList = {
+    {"أحمر", "#FF0000", Color3.fromRGB(255, 0, 0)},
+    {"أخضر", "#00FF00", Color3.fromRGB(0, 255, 0)},
+    {"أزرق", "#0088FF", Color3.fromRGB(0, 136, 255)},
+    {"أصفر", "#FFFF00", Color3.fromRGB(255, 255, 0)},
+    {"وردي", "#FF69B4", Color3.fromRGB(255, 105, 180)},
+    {"بنفسجي", "#9900FF", Color3.fromRGB(153, 0, 255)},
+    {"برتقالي", "#FFA500", Color3.fromRGB(255, 165, 0)},
+    {"سماوي", "#00FFFF", Color3.fromRGB(0, 255, 255)},
+    {"أبيض", "#FFFFFF", Color3.fromRGB(255, 255, 255)}
+}
+
+for _, data in ipairs(colorList) do
+    local btn = Instance.new("TextButton")
+    btn.BackgroundColor3 = data[3]
+    btn.TextColor3 = (data[2] == "#FFFFFF" or data[2] == "#FFFF00") and Color3.fromRGB(0,0,0) or Color3.fromRGB(255,255,255)
+    btn.Text = data[1]
+    btn.TextSize = 12
+    btn.Parent = colorsFrame
+    
+    Instance.nw("UICorner", btn).CornerRadius = UDim.new(0, 5)
+    
+    btn.MouseButton1Click:Connect(function()
+        colorBox.Text = data[2]
+    end)
+end
+
+-- زر الإرسال
+local sendButton = Instance.new("TextButton")
+sendButton.Size = UDim2.new(0.9, 0, 0, 40)
+sendButton.Position = UDim2.new(0.05, 0, 0, 255)
+sendButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+sendButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+sendButton.Text = "إرسال بالشات"
+sendButton.TextSize = 16
+sendButton.Parent = mainFrame
+Instance.new("UICorner", sendButton).CornerRadius = UDim.new(0, 6)
+
+-- زر الإغلاق
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -35, 0, 5)
+closeButton.BackgroundTransparency = 1
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+closeButton.Parent = mainFrame
+
+closeButton.MouseButton1Click:Connect(function() screenGui:Destroy() end)
+
+- النص
+sendButton.MouseButton1Click:Connect(function()
+    local text = textBox.Text
+    local size = sizeBox.Text
+    local color = colorBox.Text
+    
+    if text ~= "" then
+        local formattedMessage = string.format('<font size="%s" color="%s">%s</font>', size, color, text)
+        Event:FireServer(formattedMessage)
+        textBox.Text = "" -- النص
+    end
+end)
